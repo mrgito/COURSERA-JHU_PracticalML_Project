@@ -653,6 +653,15 @@ legend(&quot;topright&quot;, legend = c(&quot;R Forest with CV&quot;,&quot;R For
 </div>
 <div id="conclusion-prediction-on-test-data" class="section level1">
 <h1>CONCLUSION, Prediction on Test Data</h1>
+<p>As we can see from model prediction result that Random Forest with
+Cross Validation results in best result with 99.3% Model and even Random
+Forest without Cross Validation shows good result with 99.28% and lastly
+without Random Forest and Cross Validation (Pure Decision Tree) only 75%
+model accuracy. This resulting out-of-sample error ~0.0069 for Random
+Forest with Cross Validation, ~0.007 for Random Forest without Cross
+Validation and 0.24 without Random Forest and Cross Validation.</p>
+<p>Hence Random Forest and Cross Validation enhanced model
+prediction</p>
 <div id="prediction-with-test-data-result" class="section level2">
 <h2>1. Prediction with Test Data Result</h2>
 <pre class="r"><code>predict1_test &lt;- predict(model1,rawdata_testing_clean[,1:52],type = &quot;class&quot;)

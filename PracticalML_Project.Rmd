@@ -3,8 +3,7 @@ title: "Practical Machine Learning - Project"
 author: "Gito"
 date: "2024-11-08"
 output: 
-
-  word_document: default
+html_document: default
 
 ---
 
@@ -161,6 +160,11 @@ legend("topright", legend = c("R Forest with CV","R Forest without CV"), col = c
 ```
 
 # CONCLUSION, Prediction on Test Data
+
+As we can see from model prediction result that Random Forest with Cross Validation results in best  result with 99.3% Model and even Random Forest without Cross Validation shows good result with 99.28% and lastly without Random Forest and Cross Validation (Pure Decision Tree) only 75% model accuracy.
+This resulting out-of-sample error ~0.0069 for Random Forest with Cross Validation, ~0.007 for Random Forest without Cross Validation and 0.24 without Random Forest and Cross Validation.
+
+Hence Random Forest and Cross Validation enhanced model prediction
 
 ## 1. Prediction with Test Data Result
 
