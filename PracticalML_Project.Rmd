@@ -1,0 +1,178 @@
+---
+title: "Practical Machine Learning - Project"
+author: "Gito"
+date: "2024-11-08"
+output: 
+
+  word_document: default
+
+---
+
+# PRACTICAL MACHINE LEARNING PREDICTION ASSIGNMENT - JHU - COURSERA
+
+This Project is part of JHU - Coursera Project on Practical Machine
+Learning. Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it
+is now possible to collect a large amount of data about personal
+activity relatively inexpensively. These type of devices are part of the
+quantified self movement – a group of enthusiasts who take measurements
+about themselves regularly to improve their health, to find patterns in
+their behavior, or because they are tech geeks. One thing that people
+regularly do is quantify how much of a particular activity they do, but
+they rarely quantify how well they do it. In this project, your goal
+will be to use data from accelerometers on the belt, forearm, arm, and
+dumbell of 6 participants.
+
+Data
+
+The training data for this project are available here:
+<https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv>
+
+The test data are available here:
+<https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv>
+
+# Required Result
+
+Your submission for the Peer Review portion should consist of a link to
+a Github repo with your R markdown and compiled HTML file describing
+your analysis. Please constrain the text of the writeup to \< 2000 words
+and the number of figures to be less than 5. It will make it easier for
+the graders if you submit a repo with a gh-pages branch so the HTML page
+can be viewed online (and you always want to make it easy on graders
+:-).
+
+# Importing Data and load necessary library
+
+Import data from local directory and consider "NA","", and "#DIV/0!" as
+NA strings
+
+```{r }
+library(caret)
+library(tidyverse)
+library(dplyr)
+library(GGally)
+library(rpart)
+library(randomForest)
+# library(cor)
+rawdata_training <- read.csv("pml-training.csv",header = TRUE,na.strings = c("NA","","#DIV/0!"))
+rawdata_testing <- read.csv("pml-testing.csv",header = TRUE,na.strings = c("NA","","#DIV/0!"))
+dim(rawdata_training)
+dim(rawdata_testing)
+```
+
+# Clean Data
+
+By Analyzing the data, we can see many NA strings and we might need to
+analyze which variables are not important to the model. Below are my
+methodologies to remove unnecessary data 1. Low variability data 2. NA
+values will be removed --\> By recognizing sum of NA for each variable,
+if sum is 0 then its considered as NA column 3. Remove time variable,
+window variable, name and 1st columns
+
+```{r }
+# Removing NAs
+rawdata_training <- rawdata_training[,colSums(is.na(rawdata_training)) == 0]
+rawdata_testing <- rawdata_testing[,colSums(is.na(rawdata_testing)) == 0]
+dim(rawdata_training)
+dim(rawdata_testing)
+```
+
+```{r }
+rawdata_training_clean <- rawdata_training[,8:60]
+rawdata_testing_clean <- rawdata_testing[,8:60]
+```
+
+We will split our training to 70% to generate model & 30% to validate
+model to quantify the performance before passing to data testing set
+
+```{r }
+set.seed(123)
+train_sample <- createDataPartition(rawdata_training_clean$classe,p=0.7,list = FALSE)
+train <- rawdata_training_clean[train_sample,]
+validate <- rawdata_training_clean[-train_sample,]
+```
+
+# Data Modelling
+
+## 1. 1st Model, Basic Decision Tree
+
+### 1.1 Decision Tree Model
+
+```{r }
+model1 <- rpart(classe~.,data = train,method = "class")
+par(cex=0.7)
+plot(model1)
+text(model1)
+```
+
+### 1.2 Decision Tree Model Prediction Performance
+
+```{r }
+predict_validate_tree <- predict(model1,validate,type = "class")
+CF_DTree <- confusionMatrix(as.factor(validate$classe),predict_validate_tree)
+CF_DTree
+```
+
+## 2. 2nd Model, Random Forest with Cross Validation
+
+### 2.1 Random Forest Model with Cross Validation
+
+```{r }
+set.seed(321)
+model2 <- train(classe~.,data = train,method = "rf", trcontrol = trainControl(method = "cv",10),ntree = 100)
+model2
+plot(model2)
+```
+
+### 2.2 Random Forest with Cross Validation Prediction Performance
+
+```{r }
+predict_validate_rforest <- predict(model2,validate)
+CF_RFCV <- confusionMatrix(as.factor(validate$classe),predict_validate_rforest)
+CF_RFCV
+
+```
+
+## 3. 3rd Model, Random Forest without Cross Validation
+
+### 3.1 Random Forest Model without Cross Validation
+
+```{r }
+set.seed(31)
+model3 <- train(classe~.,data = train,method = "rf", ntree = 100)
+model3
+plot(model3)
+```
+
+### 3.2 Random Forest Prediction Performance
+
+```{r }
+predict_validate_rforest_noCV <- predict(model3,validate)
+CF_RF <- confusionMatrix(as.factor(validate$classe),predict_validate_rforest_noCV)
+CF_RF
+```
+
+## Performance Benchmark Chart Random Forest with Cross Validation and Without Cross validataion
+
+```{r }
+plot(model2$results[,1],model2$results[,2],type = "l",col = "blue",xlab = "Predictors",ylab = "Accuracy", main = "Random Forest with CV & Without CV Performance Benchmark")
+# lines(model2$results[,1],model2$results[,2],col = "blue",xlab = "Predictors",ylab = "Accuracy", main = "Random Forest with CV & Without CV Performance Benchmark")
+lines(model3$results[,1],model3$results[,2],col = "green")
+legend("topright", legend = c("R Forest with CV","R Forest without CV"), col = c("blue","green"),lty = 1)
+```
+
+# CONCLUSION, Prediction on Test Data
+
+## 1. Prediction with Test Data Result
+
+```{r }
+predict1_test <- predict(model1,rawdata_testing_clean[,1:52],type = "class")
+predict2_test <- predict(model2,rawdata_testing_clean[,1:52])
+predict3_test <- predict(model3,rawdata_testing_clean[,1:52])
+print(data.frame("problem" = rawdata_testing_clean$problem_id,"Decision Tree Prediction" = predict1_test,"Random Forest with CV Prediction" = predict2_test, "Random Forest w/o CV" = predict3_test))
+```
+
+## 2. Model Accuracy Benchmark
+
+```{r }
+print(data.frame("Decision Tree" = CF_DTree$overall[1], "Random Forest with CV" = CF_RFCV$overall[1],"Random Forest w/o CV" = CF_RF$overall[1]))
+```
