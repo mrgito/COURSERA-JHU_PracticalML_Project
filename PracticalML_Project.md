@@ -30,10 +30,54 @@ the graders if you submit a repo with a gh-pages branch so the HTML page
 can be viewed online (and you always want to make it easy on graders
 :-).
 
-# Importing Data and load necessary library
+# Executive Summary
 
-Import data from local directory and consider “NA”,““, and”#DIV/0!” as
-NA strings
+Below are the model performance summary
+
+-   Random Forest with Cross Validation results in best result with
+    99.3% Accuracy with 0.69% Out-Of-Sample Error
+
+-   Random Forest without Cross Validation shows good result with 99.28%
+    Accuracy with 0.7% Out-Of-Sample Error
+
+-   Pure Decision Tree only 75% Accuracy with 24% Out-Of-Sample Error
+
+Hence Random Forest and Cross Validation enhanced model prediction
+
+# Modeling Process :
+
+Below are the procedure to build model :
+
+1.  Importing, Cleaning Data and Load Necessary library  
+    1.1 Removing Unnecessary Variable and NAs  
+    1.2 Split Training Data into 70% Training and 30% Validation
+
+2.  Data Modelling  
+    2.1 Decision Tree Model, we will use model to predict the testing
+    data  
+    2.2 Random Forest Model with Cross Validation,we will use model to
+    predict the testing data  
+    2.3 Random Forest Model without Cross validation, we will use model
+    to predict the testing data
+
+3.  Conclusion, Analyzing Result Based on Model Accuracy and Out-of
+    sample errors
+
+# Importing, Cleaning Data and Load Necessary library
+
+-   Here we will import Training data and Testing Data from local
+    directory, consider “NA”,““, and”#DIV/0!” as NA strings
+
+-   Split Training data to 70% Training and 30% Validation data and save
+    the variable to train and validate variable respectively
+
+-   testing data to be saved as testing variable
+
+-   We can see variables/features reduced significantly after cleaning
+    unnecessary variables, from 160 to 60 features only without reducing
+    modelling prediction
+
+-   Datas are then ready to be modelled
 
 ``` r
 library(caret)
@@ -103,7 +147,7 @@ dim(rawdata_testing)
 
     ## [1]  20 160
 
-# Clean Data
+## Clean Data
 
 By Analyzing the data, we can see many NA strings and we might need to
 analyze which variables are not important to the model. Below are my
@@ -144,9 +188,20 @@ validate <- rawdata_training_clean[-train_sample,]
 
 # Data Modelling
 
+We will use 3 Model, Decision Tree, Random Forest with Cross Validation
+and Random Forest without Cross Validation
+
 ## 1. 1st Model, Basic Decision Tree
 
 ### 1.1 Decision Tree Model
+
+We build Decision Tree model for train data and validate model using
+validate data and we will see the performances. and store model result
+as model1
+
+We pass object classe to rpart function and we use method “class” to
+predict class variable instead of probability. Below is the Decision
+Tree chart result.
 
 ``` r
 model1 <- rpart(classe~.,data = train,method = "class")
@@ -158,6 +213,14 @@ text(model1)
 ![](PracticalML_Project_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ### 1.2 Decision Tree Model Prediction Performance
+
+This procedure is to validate the model1 using validate sample data and
+measure its performance based on Confusion Matrix Indicator and
+Out-of-sample error.
+
+-   Model Accuracy 75.7%
+
+-   Out-of-sample error 24.3%
 
 ``` r
 predict_validate_tree <- predict(model1,validate,type = "class")
@@ -200,7 +263,18 @@ CF_DTree
 
 ## 2. 2nd Model, Random Forest with Cross Validation
 
-### 2.1 Random Forest Model with Cross Validation
+We build 2nd Model with Cross Validation for train data and validate
+model using validate data and we will see the performances. and store
+model result as model2.
+
+We apply Cross Validation function with 10 Fold Cross Validation and 100
+tree
+
+We pass object classe to train function and we use trcontrol function to
+apply cross validation with 10 Fold. Below is Random Forest Chart with
+CV result.
+
+### 2.1 Random Forest Model with Cross Validation (CV)
 
 ``` r
 set.seed(321)
@@ -234,6 +308,14 @@ plot(model2)
 ![](PracticalML_Project_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ### 2.2 Random Forest with Cross Validation Prediction Performance
+
+This procedure is to validate the model2 using validate sample data and
+measure its performance based on Confusion Matrix Indicator and
+Out-of-sample error.
+
+-   Model Accuracy 99.31%
+
+-   Out-of-sample error 0.69%
 
 ``` r
 predict_validate_rforest <- predict(model2,validate)
@@ -276,6 +358,12 @@ CF_RFCV
 
 ## 3. 3rd Model, Random Forest without Cross Validation
 
+We build3rd Model without Cross Validation and validate model using
+validate data and we will see the performances. and store model result
+as model3.
+
+Since no cross validation required so we dont use trcontrol function.
+
 ### 3.1 Random Forest Model without Cross Validation
 
 ``` r
@@ -310,6 +398,14 @@ plot(model3)
 ![](PracticalML_Project_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 ### 3.2 Random Forest Prediction Performance
+
+This procedure is to validate the model3 using validate sample data and
+measure its performance based on Confusion Matrix Indicator and
+Out-of-sample error.
+
+-   Model Accuracy 99.29%
+
+-   Out-of-sample error 0.7%
 
 ``` r
 predict_validate_rforest_noCV <- predict(model3,validate)
@@ -363,17 +459,19 @@ legend("topright", legend = c("R Forest with CV","R Forest without CV"), col = c
 
 # CONCLUSION, Prediction on Test Data
 
-As we can see from model prediction result that Random Forest with Cross
-Validation results in best result with 99.3% Model and even Random
-Forest without Cross Validation shows good result with 99.28% and lastly
-without Random Forest and Cross Validation (Pure Decision Tree) only 75%
-model accuracy. This resulting out-of-sample error ~0.0069 for Random
-Forest with Cross Validation, ~0.007 for Random Forest without Cross
-Validation and 0.24 without Random Forest and Cross Validation.
+Below are the model performance summary
+
+-   Random Forest with Cross Validation results in best result with
+    99.3% Accuracy with 0.69% Out-Of-Sample Error
+
+-   Random Forest without Cross Validation shows good result with 99.28%
+    Accuracy with 0.7% Out-Of-Sample Error
+
+-   Pure Decision Tree only 75% Accuracy with 24% Out-Of-Sample Error
 
 Hence Random Forest and Cross Validation enhanced model prediction
 
-## 1. Prediction with Test Data Result
+## 1. Prediction with Test Data Result for Problematic data
 
 ``` r
 predict1_test <- predict(model1,rawdata_testing_clean[,1:52],type = "class")
@@ -425,7 +523,7 @@ print(data.frame("problem" = rawdata_testing_clean$problem_id,"Decision Tree Pre
     ## 19                    B
     ## 20                    B
 
-## 2. Model Accuracy Benchmark
+## 2. Model Accuracy Benchmark for Problematic Data
 
 ``` r
 print(data.frame("Decision Tree" = CF_DTree$overall[1], "Random Forest with CV" = CF_RFCV$overall[1],"Random Forest w/o CV" = CF_RF$overall[1]))

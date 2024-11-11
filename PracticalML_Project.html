@@ -385,10 +385,51 @@ easier for the graders if you submit a repo with a gh-pages branch so
 the HTML page can be viewed online (and you always want to make it easy
 on graders :-).</p>
 </div>
-<div id="importing-data-and-load-necessary-library" class="section level1">
-<h1>Importing Data and load necessary library</h1>
-<p>Import data from local directory and consider “NA”,““, and”#DIV/0!”
-as NA strings</p>
+<div id="executive-summary" class="section level1">
+<h1>Executive Summary</h1>
+<p>Below are the model performance summary</p>
+<ul>
+<li><p>Random Forest with Cross Validation results in best result with
+99.3% Accuracy with 0.69% Out-Of-Sample Error</p></li>
+<li><p>Random Forest without Cross Validation shows good result with
+99.28% Accuracy with 0.7% Out-Of-Sample Error</p></li>
+<li><p>Pure Decision Tree only 75% Accuracy with 24% Out-Of-Sample
+Error</p></li>
+</ul>
+<p>Hence Random Forest and Cross Validation enhanced model
+prediction</p>
+</div>
+<div id="modeling-process" class="section level1">
+<h1>Modeling Process :</h1>
+<p>Below are the procedure to build model :</p>
+<ol style="list-style-type: decimal">
+<li><p>Importing, Cleaning Data and Load Necessary library<br />
+1.1 Removing Unnecessary Variable and NAs<br />
+1.2 Split Training Data into 70% Training and 30% Validation</p></li>
+<li><p>Data Modelling<br />
+2.1 Decision Tree Model, we will use model to predict the testing
+data<br />
+2.2 Random Forest Model with Cross Validation,we will use model to
+predict the testing data<br />
+2.3 Random Forest Model without Cross validation, we will use model to
+predict the testing data</p></li>
+<li><p>Conclusion, Analyzing Result Based on Model Accuracy and Out-of
+sample errors</p></li>
+</ol>
+</div>
+<div id="importing-cleaning-data-and-load-necessary-library" class="section level1">
+<h1>Importing, Cleaning Data and Load Necessary library</h1>
+<ul>
+<li><p>Here we will import Training data and Testing Data from local
+directory, consider “NA”,““, and”#DIV/0!” as NA strings</p></li>
+<li><p>Split Training data to 70% Training and 30% Validation data and
+save the variable to train and validate variable respectively</p></li>
+<li><p>testing data to be saved as testing variable</p></li>
+<li><p>We can see variables/features reduced significantly after
+cleaning unnecessary variables, from 160 to 60 features only without
+reducing modelling prediction</p></li>
+<li><p>Datas are then ready to be modelled</p></li>
+</ul>
 <pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: ggplot2</code></pre>
 <pre><code>## Loading required package: lattice</code></pre>
@@ -430,9 +471,8 @@ dim(rawdata_training)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
 <pre class="r"><code>dim(rawdata_testing)</code></pre>
 <pre><code>## [1]  20 160</code></pre>
-</div>
-<div id="clean-data" class="section level1">
-<h1>Clean Data</h1>
+<div id="clean-data" class="section level2">
+<h2>Clean Data</h2>
 <p>By Analyzing the data, we can see many NA strings and we might need
 to analyze which variables are not important to the model. Below are my
 methodologies to remove unnecessary data 1. Low variability data 2. NA
@@ -456,12 +496,21 @@ train_sample &lt;- createDataPartition(rawdata_training_clean$classe,p=0.7,list 
 train &lt;- rawdata_training_clean[train_sample,]
 validate &lt;- rawdata_training_clean[-train_sample,]</code></pre>
 </div>
+</div>
 <div id="data-modelling" class="section level1">
 <h1>Data Modelling</h1>
+<p>We will use 3 Model, Decision Tree, Random Forest with Cross
+Validation and Random Forest without Cross Validation</p>
 <div id="st-model-basic-decision-tree" class="section level2">
 <h2>1. 1st Model, Basic Decision Tree</h2>
 <div id="decision-tree-model" class="section level3">
 <h3>1.1 Decision Tree Model</h3>
+<p>We build Decision Tree model for train data and validate model using
+validate data and we will see the performances. and store model result
+as model1</p>
+<p>We pass object classe to rpart function and we use method “class” to
+predict class variable instead of probability. Below is the Decision
+Tree chart result.</p>
 <pre class="r"><code>model1 &lt;- rpart(classe~.,data = train,method = &quot;class&quot;)
 par(cex=0.7)
 plot(model1)
@@ -470,6 +519,13 @@ text(model1)</code></pre>
 </div>
 <div id="decision-tree-model-prediction-performance" class="section level3">
 <h3>1.2 Decision Tree Model Prediction Performance</h3>
+<p>This procedure is to validate the model1 using validate sample data
+and measure its performance based on Confusion Matrix Indicator and
+Out-of-sample error.</p>
+<ul>
+<li><p>Model Accuracy 75.7%</p></li>
+<li><p>Out-of-sample error 24.3%</p></li>
+</ul>
 <pre class="r"><code>predict_validate_tree &lt;- predict(model1,validate,type = &quot;class&quot;)
 CF_DTree &lt;- confusionMatrix(as.factor(validate$classe),predict_validate_tree)
 CF_DTree</code></pre>
@@ -509,8 +565,16 @@ CF_DTree</code></pre>
 </div>
 <div id="nd-model-random-forest-with-cross-validation" class="section level2">
 <h2>2. 2nd Model, Random Forest with Cross Validation</h2>
-<div id="random-forest-model-with-cross-validation" class="section level3">
-<h3>2.1 Random Forest Model with Cross Validation</h3>
+<p>We build 2nd Model with Cross Validation for train data and validate
+model using validate data and we will see the performances. and store
+model result as model2.</p>
+<p>We apply Cross Validation function with 10 Fold Cross Validation and
+100 tree</p>
+<p>We pass object classe to train function and we use trcontrol function
+to apply cross validation with 10 Fold. Below is Random Forest Chart
+with CV result.</p>
+<div id="random-forest-model-with-cross-validation-cv" class="section level3">
+<h3>2.1 Random Forest Model with Cross Validation (CV)</h3>
 <pre class="r"><code>set.seed(321)
 model2 &lt;- train(classe~.,data = train,method = &quot;rf&quot;, trcontrol = trainControl(method = &quot;cv&quot;,10),ntree = 100)
 model2</code></pre>
@@ -537,6 +601,13 @@ model2</code></pre>
 </div>
 <div id="random-forest-with-cross-validation-prediction-performance" class="section level3">
 <h3>2.2 Random Forest with Cross Validation Prediction Performance</h3>
+<p>This procedure is to validate the model2 using validate sample data
+and measure its performance based on Confusion Matrix Indicator and
+Out-of-sample error.</p>
+<ul>
+<li><p>Model Accuracy 99.31%</p></li>
+<li><p>Out-of-sample error 0.69%</p></li>
+</ul>
 <pre class="r"><code>predict_validate_rforest &lt;- predict(model2,validate)
 CF_RFCV &lt;- confusionMatrix(as.factor(validate$classe),predict_validate_rforest)
 CF_RFCV</code></pre>
@@ -576,6 +647,11 @@ CF_RFCV</code></pre>
 </div>
 <div id="rd-model-random-forest-without-cross-validation" class="section level2">
 <h2>3. 3rd Model, Random Forest without Cross Validation</h2>
+<p>We build3rd Model without Cross Validation and validate model using
+validate data and we will see the performances. and store model result
+as model3.</p>
+<p>Since no cross validation required so we dont use trcontrol
+function.</p>
 <div id="random-forest-model-without-cross-validation" class="section level3">
 <h3>3.1 Random Forest Model without Cross Validation</h3>
 <pre class="r"><code>set.seed(31)
@@ -604,6 +680,13 @@ model3</code></pre>
 </div>
 <div id="random-forest-prediction-performance" class="section level3">
 <h3>3.2 Random Forest Prediction Performance</h3>
+<p>This procedure is to validate the model3 using validate sample data
+and measure its performance based on Confusion Matrix Indicator and
+Out-of-sample error.</p>
+<ul>
+<li><p>Model Accuracy 99.29%</p></li>
+<li><p>Out-of-sample error 0.7%</p></li>
+</ul>
 <pre class="r"><code>predict_validate_rforest_noCV &lt;- predict(model3,validate)
 CF_RF &lt;- confusionMatrix(as.factor(validate$classe),predict_validate_rforest_noCV)
 CF_RF</code></pre>
@@ -653,17 +736,19 @@ legend(&quot;topright&quot;, legend = c(&quot;R Forest with CV&quot;,&quot;R For
 </div>
 <div id="conclusion-prediction-on-test-data" class="section level1">
 <h1>CONCLUSION, Prediction on Test Data</h1>
-<p>As we can see from model prediction result that Random Forest with
-Cross Validation results in best result with 99.3% Model and even Random
-Forest without Cross Validation shows good result with 99.28% and lastly
-without Random Forest and Cross Validation (Pure Decision Tree) only 75%
-model accuracy. This resulting out-of-sample error ~0.0069 for Random
-Forest with Cross Validation, ~0.007 for Random Forest without Cross
-Validation and 0.24 without Random Forest and Cross Validation.</p>
+<p>Below are the model performance summary</p>
+<ul>
+<li><p>Random Forest with Cross Validation results in best result with
+99.3% Accuracy with 0.69% Out-Of-Sample Error</p></li>
+<li><p>Random Forest without Cross Validation shows good result with
+99.28% Accuracy with 0.7% Out-Of-Sample Error</p></li>
+<li><p>Pure Decision Tree only 75% Accuracy with 24% Out-Of-Sample
+Error</p></li>
+</ul>
 <p>Hence Random Forest and Cross Validation enhanced model
 prediction</p>
-<div id="prediction-with-test-data-result" class="section level2">
-<h2>1. Prediction with Test Data Result</h2>
+<div id="prediction-with-test-data-result-for-problematic-data" class="section level2">
+<h2>1. Prediction with Test Data Result for Problematic data</h2>
 <pre class="r"><code>predict1_test &lt;- predict(model1,rawdata_testing_clean[,1:52],type = &quot;class&quot;)
 predict2_test &lt;- predict(model2,rawdata_testing_clean[,1:52])
 predict3_test &lt;- predict(model3,rawdata_testing_clean[,1:52])
@@ -711,8 +796,8 @@ print(data.frame(&quot;problem&quot; = rawdata_testing_clean$problem_id,&quot;De
 ## 19                    B
 ## 20                    B</code></pre>
 </div>
-<div id="model-accuracy-benchmark" class="section level2">
-<h2>2. Model Accuracy Benchmark</h2>
+<div id="model-accuracy-benchmark-for-problematic-data" class="section level2">
+<h2>2. Model Accuracy Benchmark for Problematic Data</h2>
 <pre class="r"><code>print(data.frame(&quot;Decision Tree&quot; = CF_DTree$overall[1], &quot;Random Forest with CV&quot; = CF_RFCV$overall[1],&quot;Random Forest w/o CV&quot; = CF_RF$overall[1]))</code></pre>
 <pre><code>##          Decision.Tree Random.Forest.with.CV Random.Forest.w.o.CV
 ## Accuracy     0.7573492             0.9930331            0.9928632</code></pre>

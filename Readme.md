@@ -15,4 +15,7 @@ available from the website here:
 <http://groupware.les.inf.puc-rio.br/har> (see the section on the Weight
 Lifting Exercise Dataset).
 
+This Project is to predict Testing Data based on Training Data set. The
+result can be seen on my Rpub below :
+
 Rpublication link : <https://rpubs.com/Masculin/PractialML_JHUCoursera>
